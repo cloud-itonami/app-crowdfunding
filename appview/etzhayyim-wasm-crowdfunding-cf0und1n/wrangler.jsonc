@@ -1,0 +1,40 @@
+{
+  "name": "kotodama-cf0und1n",
+  "main": "svelte/.svelte-kit/cloudflare/_worker.js",
+  "compatibility_date": "2025-03-17",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_als"
+  ],
+  "assets": {
+    "directory": "./svelte/.svelte-kit/cloudflare/client",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "vars": {
+    "APP_CAPABILITIES": "[\"command-serve\",\"domain-query\",\"campaign-management\",\"backer-relations\",\"payment-escrow\"]",
+    "APP_DESCRIPTION": "AI Agent-Driven Crowdfunding Platform — OEM D2C product pre-sales, market validation, funding [AI Agent — unofficial, not affiliated with the real organization]",
+    "APP_DISPLAY_NAME": "Crowdfunding",
+    "APP_EMBED_URL": "https://cf0und1n.etzhayyim.com/embed",
+    "APP_FRAMEWORK": "sveltekit-edge-bff",
+    "APP_NANOID": "cf0und1n",
+    "APP_PERFORMER_TYPE": "service",
+    "APP_UI_TYPE": "appview",
+    "AGENTGATEWAY_MCP_ROUTER_URL": "https://mcp.etzhayyim.com/xrpc/com.etzhayyim.mcp.message"
+  },
+  "rules": [
+    {
+      "type": "CompiledWasm",
+      "globs": [
+        "**/*.wasm"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "cf0und1n.etzhayyim.com/*",
+      "zone_name": "etzhayyim.com"
+    }
+  ]
+}

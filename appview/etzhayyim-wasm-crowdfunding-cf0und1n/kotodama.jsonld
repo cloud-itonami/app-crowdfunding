@@ -1,0 +1,158 @@
+{
+  "@context": "https://etzhayyim.com/ns/kotodama/v1",
+  "@id": "did:web:crowdfunding.etzhayyim.com",
+  "component": {
+    "path": "component.wasm"
+  },
+  "convoSystemPrompt": "You are crowdfunding.etzhayyim.com — AI-driven crowdfunding platform for OEM D2C products. Help creators launch campaigns, backers discover projects, and manage campaign lifecycle. Respond in the user's language.",
+  "deploy": {},
+  "duties": [
+    "勤労の義務"
+  ],
+  "governance": {
+    "raci": "responsible",
+    "classification": "public",
+    "complianceFrameworks": [
+      "service-agreement",
+      "tokushoho",
+      "keihyoho",
+      "shikin-kessaiho"
+    ]
+  },
+  "kpi": [
+    "campaign 成功率",
+    "総支援額",
+    "平均支援単価",
+    "fulfillment 完了率"
+  ],
+  "name": "etzhayyim-wasm-crowdfunding",
+  "nanoid": "cf0und1n",
+  "performerType": "service",
+  "profile": {
+    "agentType": "autonomous",
+    "capabilities": [
+      "command-serve",
+      "domain-query",
+      "campaign-management",
+      "backer-relations",
+      "payment-escrow"
+    ],
+    "description": "AI Agent-Driven Crowdfunding Platform — OEM D2C product pre-sales, market validation, funding [AI Agent — unofficial, not affiliated with the real organization]",
+    "displayName": "Crowdfunding",
+    "isBot": true,
+    "operator": "etzhayyim.com"
+  },
+  "project": "crowdfunding",
+  "routes": [
+    {
+      "host": "crowdfunding.etzhayyim.com",
+      "paths": ["/"],
+      "tls": true
+    }
+  ],
+  "runtimeType": "worker",
+  "space": {
+    "channels": [
+      {
+        "default": true,
+        "description": "New campaigns, funding milestones, success announcements",
+        "kind": "public",
+        "name": "crowdfunding-feed"
+      },
+      {
+        "description": "Campaign creator updates and progress reports",
+        "kind": "public",
+        "name": "crowdfunding-updates"
+      },
+      {
+        "description": "Backer community discussion",
+        "kind": "public",
+        "name": "crowdfunding-community"
+      }
+    ],
+    "description": "AI-driven crowdfunding for OEM D2C products — pre-sales, market validation, funding",
+    "historyVisibility": "world-readable",
+    "joinRule": "public",
+    "name": "Crowdfunding"
+  },
+  "triggers": {
+    "http": {
+      "listen": "0.0.0.0:8080",
+      "routes": ["/api/grpc/...", "/health", "/healthz", "/readyz"]
+    },
+    "subscribeRepos": {
+      "collections": [
+        "app.bsky.feed.post",
+        "app.bsky.feed.like",
+        "app.bsky.feed.repost",
+        "app.bsky.graph.follow",
+        "com.etzhayyim.apps.crowdfunding.campaign",
+        "com.etzhayyim.apps.crowdfunding.reward",
+        "com.etzhayyim.apps.crowdfunding.pledge",
+        "com.etzhayyim.apps.crowdfunding.campaignUpdate",
+        "com.etzhayyim.apps.crowdfunding.analyticsEvent",
+        "com.etzhayyim.apps.tsukuru.production_progress",
+        "com.etzhayyim.apps.tsukuru.quality_inspection"
+      ]
+    }
+  },
+  "uiType": "appview",
+  "embedUrl": "https://cf0und1n.etzhayyim.com/embed",
+  "derive": {
+    "social": [
+      {
+        "on": "com.etzhayyim.apps.crowdfunding.campaign",
+        "when": { "status": "live" },
+        "template": "[Crowdfunding] \"{{title}}\" is now live! Goal: ¥{{goalAmount}} — Support now at crowdfunding.etzhayyim.com"
+      },
+      {
+        "on": "com.etzhayyim.apps.crowdfunding.campaign",
+        "when": { "status": "funded" },
+        "template": "[Crowdfunding] \"{{title}}\" funded! ¥{{currentAmount}} raised — manufacturing order submitted"
+      },
+      {
+        "on": "com.etzhayyim.apps.crowdfunding.campaign",
+        "when": { "status": "failed" },
+        "template": "[Crowdfunding] \"{{title}}\" did not reach its goal. All pledges will be refunded."
+      },
+      {
+        "on": "com.etzhayyim.apps.crowdfunding.campaign",
+        "when": { "status": "fulfillment" },
+        "template": "[Crowdfunding → Manufacturing] \"{{title}}\" 製造発注完了 → tsukuru.etzhayyim.com"
+      },
+      {
+        "on": "com.etzhayyim.apps.crowdfunding.campaignUpdate",
+        "template": "[Crowdfunding Update] {{campaignTitle}}: {{title}}"
+      },
+      {
+        "on": "com.etzhayyim.apps.tsukuru.production_progress",
+        "when": { "productionOrderId": "cf_*" },
+        "template": "[Manufacturing Update] {{milestone}} ({{percentage}}%)"
+      },
+      {
+        "on": "com.etzhayyim.apps.tsukuru.quality_inspection",
+        "when": { "result": "pass", "productionOrderId": "cf_*" },
+        "template": "[Crowdfunding] QC passed! Shipping to backers soon."
+      }
+    ],
+    "invoke": [
+      {
+        "on": "com.etzhayyim.apps.crowdfunding.campaign",
+        "when": { "status": "fulfillment" },
+        "target": "did:web:tsukuru.etzhayyim.com",
+        "method": "com.etzhayyim.apps.tsukuru.productionOrder.createProductionOrder",
+        "map": {
+          "okaimono_order_id": "cf_{{id}}",
+          "customer_id": "{{productDid}}",
+          "product_spec": {
+            "title": "{{title}}",
+            "sku": "{{title}}"
+          },
+          "fulfillment_mode": "bto",
+          "priority": "normal",
+          "certifications_required": ["pse", "ce", "fcc"]
+        }
+      }
+    ]
+  }
+}
