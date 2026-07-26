@@ -9,7 +9,7 @@ extend the TypeScript domain here.**
 ## What happened to this code
 
 The TRANSFORM codemod this file waited for since 2026-05-21 was never run,
-and running it would have been the wrong move: the 622 lines of TypeScript
+and running it would have been the wrong move: the 646 lines of TypeScript
 in `kotoba/src/` violate the workspace runtime priority (`kotoba wasm` >
 `clojurewasm` > ClojureScript > nbb; no new raw TS), and the domain they
 encoded was four concepts wide — campaign, pledge, settlement, tithe.
