@@ -1,1 +1,13 @@
-{:schema "etzhayyim.repository/v1" :name "com-etzhayyim-app-crowdfunding" :kind :app :canonical-metadata :edn}
+{:schema "etzhayyim.repository/v1"
+ :name "com-etzhayyim-app-crowdfunding"
+ :kind :app
+ :canonical-metadata :edn
+ :status :superseded
+ :superseded-by {:library "kotoba-lang/crowdfunding"
+                 :actors ["cloud-itonami/cloud-itonami-crowdfunding-campaign"
+                          "cloud-itonami/cloud-itonami-crowdfunding-pledge"
+                          "cloud-itonami/cloud-itonami-crowdfunding-collection"
+                          "cloud-itonami/cloud-itonami-crowdfunding-payout"]
+                 :adr "2607268500-crowdfunding-itonami-capability-and-actors"
+                 :date "2026-07-27"
+                 :note "TypeScript domain (campaign/pledge/settlement/tithe) reimplemented in portable .cljc at rewards-crowdfunding scale. The 10% Public-Fund tithe survives as fee/fee-schedule :tithe-bps (default 0), with parity pinned by test. Only the AT Protocol appview is not superseded. See MIGRATION-TODO.md."}}
