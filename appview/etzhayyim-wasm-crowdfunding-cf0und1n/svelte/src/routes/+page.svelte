@@ -4,11 +4,11 @@
   "project": "etzhayyim-project-crowdfunding",
   "name": "etzhayyim-wasm-crowdfunding-cf0und1n",
   "kind": "appview",
-  "routeCount": 0,
-  "routes": [],
-  "vars": [],
+  "routeCount": 1,
+  "routes": ["cf0und1n.etzhayyim.com/*"],
+  "vars": ["AGENTGATEWAY_MCP_ROUTER_URL", "APP_CAPABILITIES", "APP_DESCRIPTION", "APP_DISPLAY_NAME", "APP_EMBED_URL", "APP_FRAMEWORK", "APP_NANOID", "APP_PERFORMER_TYPE", "APP_UI_TYPE"],
   "xrpc": true,
-  "relativePath": "60-apps/etzhayyim-project-crowdfunding/appview/etzhayyim-wasm-crowdfunding-cf0und1n/svelte/src/routes/+page.svelte"
+  "relativePath": "appview/etzhayyim-wasm-crowdfunding-cf0und1n/svelte/src/routes/+page.svelte"
 };
 </script>
 
