@@ -49,13 +49,34 @@ covenant quietly changing.
 
 ## What still needs doing in THIS repo
 
-- [ ] Decide the fate of `appview/etzhayyim-wasm-crowdfunding-cf0und1n`
-      (Svelte + XRPC). It is the only part not superseded — the itonami
-      actors have no AT Protocol surface. Either point it at the new
-      capability or retire it deliberately.
+- [x] **Decide the fate of `appview/etzhayyim-wasm-crowdfunding-cf0und1n`.**
+      Decided 2026-08-18: **kept, and migrated off Svelte/TypeScript to
+      ClojureScript** (`docs/adr/0001`). It is still the only part not
+      superseded — the itonami actors have no AT Protocol surface — so
+      retiring it would have removed the one surface that has no
+      replacement. It was not pointed at the new capability either: it
+      relays XRPC to an MCP router, exactly as before. Pointing it at
+      `kotoba-lang/crowdfunding` is a separate decision, and it is still
+      open.
 - [ ] The substrate-boundary checklist below is **moot for the domain
-      code** (that no longer lives here) but still applies to the appview
-      if it is kept.
+      code** (that no longer lives here) but still applies to the appview.
+      **Not walked** by the 2026-08-18 migration: that migration changed
+      the language, not the substrate posture.
+- [ ] The deploy host does not resolve. `cf0und1n.etzhayyim.com` (the only
+      declared route) and `mcp.etzhayyim.com` (the relay target) are both
+      NXDOMAIN as of 2026-08-18, so deploying changes nothing observable.
+      Deploy or retire is still an open decision, and the migration does
+      not settle it.
+
+## `kotoba/` was NOT removed by the cljs migration
+
+The 2026-08-18 migration replaced the **appview**. `kotoba/` (10 files,
+26,131 bytes, 8 of them `.ts`) is still here, unmodified. It is in no
+bundle, is referenced by nothing the migration replaced, and its two git
+dependencies resolve — so it is not dead code, and deleting it on a
+blanket "remove the TypeScript" reading would have been destruction
+rather than migration. `scripts/verify-docs-claims.cljs` pins its file
+count and byte total so it cannot grow, or silently shrink, unnoticed.
 
 ## Original substrate-boundary checks (historical, appview only)
 

@@ -120,6 +120,28 @@ Derive rules: `kotodama.jsonld` `"derive"` section。設計: `90-docs/260407-wri
 |---|---|---|
 | `etzhayyim-wasm-crowdfunding-cf0und1n` | `cf0und1n` | Campaign management + cross-actor product launch |
 
+### Appview runtime — ClojureScript（2026-08-18 移行）
+
+この component の公開面は **ClojureScript** で書かれ、`shadow-cljs` の
+`:target :esm` で `dist/worker.js` にコンパイルされる。`wrangler.jsonc` の
+`main` が指すのはその bundle である。
+
+| 面 | ファイル |
+|---|---|
+| 判断（どの handler が答えるか） | `src/crowdfunding/appview/route.cljc` |
+| ページ（jp-go-dds の hiccup） | `src/crowdfunding/appview/view.cljc` |
+| Request/Response に触る唯一の層 | `src/crowdfunding/appview/worker.cljs` |
+
+移行前は SvelteKit + TypeScript で、`main` は `svelte/.svelte-kit/cloudflare/_worker.js`
+（tree に存在しないビルド出力）を指していた。詳細は
+`docs/adr/0001-migrate-the-appview-from-typescript-to-clojurescript.edn`。
+
+**上の Domain Model / Campaign Lifecycle / Actor Composition は、この appview が
+実装しているものではない。** この面がするのは XRPC を MCP router へ中継すること
+だけで、campaign / pledge / fee / payout の実装は 2026-07-27 に
+`kotoba-lang/crowdfunding` と cloud-itonami の 4 actor へ移っている
+（`README.edn` の `:superseded-by`）。
+
 ## Actor Composition
 
 | Actor DID | Role |

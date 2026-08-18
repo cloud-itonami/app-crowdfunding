@@ -1,0 +1,175 @@
+[{:db/id -1
+  :adr/id "app-crowdfunding-0001"
+  :adr/title "appview を TypeScript/Svelte から ClojureScript へ移す"
+  :adr/status "accepted"
+  :adr/date "2026-08-18"
+  :adr/doc_type "adr"
+  :adr/source-format "edn"
+  :adr/body "
+# ADR-0001: appview を TypeScript/Svelte から ClojureScript へ移す
+
+**Status**: accepted / **Date**: 2026-08-18 / **Deciders**: Jun Kawasaki
+
+## Context
+
+この repo は 2026-07-27 に `:status :superseded` になっている。campaign /
+pledge / settlement / tithe のドメイン実装は `kotoba-lang/crowdfunding` と
+cloud-itonami の 4 actor へ移った（ADR-2607268500）。`MIGRATION-TODO.md` は
+残った 1 件を open item として書いていた:
+
+> Decide the fate of `appview/etzhayyim-wasm-crowdfunding-cf0und1n`
+> (Svelte + XRPC). It is the only part not superseded — the itonami
+> actors have no AT Protocol surface. Either point it at the new
+> capability or retire it deliberately.
+
+この ADR はその open item に答える。
+
+移行前の状態を測った結果:
+
+1. `wrangler.jsonc` の `main` は `svelte/.svelte-kit/cloudflare/_worker.js` を
+   指していたが、**`.svelte-kit` ディレクトリは tree に存在しない**
+   （`ls` が `No such file or directory`）。`assets` binding も同じく存在
+   しない `./svelte/.svelte-kit/cloudflare/client` を指していた。
+2. 公開ページは `routeCount` と `vars` を literal で持っていた。2026-08-16 に
+   superproject の fixer が `routeCount 0->1, vars 0->9` と書き込んで一度
+   直したが、生成器が build に繋がっていないので次の `wrangler.jsonc` 編集で
+   また古くなる形だった。
+3. 兄弟 repo と違い、**deploy されない `src/app.ts` は無い**。handler は
+   `svelte/src/routes/xrpc/[...path]/+server.ts` の 60 行 1 本きりで、
+   これは SvelteKit のビルドに含まれる本物である。
+
+この workspace の正本言語は cljs と kotoba である（superproject CLAUDE.md の
+runtime 順序: kotoba wasm > clojurewasm > ClojureScript > nbb）。TypeScript は
+そこに無い。
+
+## Decision
+
+**appview を ClojureScript に移し、その TypeScript と Svelte を撤去する。
+`kotoba/` は残す。**
+
+    src/crowdfunding/appview/route.cljc    判断（どの handler が答えるか）
+    src/crowdfunding/appview/view.cljc     ページ（jp-go-dds の hiccup）
+    src/crowdfunding/appview/worker.cljs   Request/Response に触る唯一の層
+            ↓ shadow-cljs :target :esm
+    dist/worker.js                         wrangler.jsonc の main が指すもの
+
+先例は同じ org の `cloud-itonami/app-ongakuka` と
+`cloud-itonami-marketplace-listing`。入口を `.kotoba` ではなく cljs に置くのは
+ADR-2606290000 の判断で、kotoba の ingress capability が `:native-aot` /
+`:wasm-aot` とも pending だからである。判断を `.cljc` に切り出してあるのは、
+ブラウザもビルドも無しにテストするためであり、ingress が qualify した時に
+最初に `.kotoba` へ移る部分だからでもある。
+
+ns を `crowdfunding.route` ではなく `crowdfunding.appview.route` にしたのは、
+`crowdfunding.{campaign,pledge,fee,payout,…}` を **kotoba-lang/crowdfunding が
+既に所有している**ためである。
+
+### `kotoba/` を消さなかった
+
+`kotoba/`（10 ファイル / 789 行 / 26,131 バイト、うち `.ts` 8 本）は
+**移行の対象ではない**。3 つ測って決めた:
+
+- appview から参照されない（`grep -rn kotoba appview/` が 0 件）
+- 撤去する 7 ファイルのどれからも import されない
+- 依存は解決する（pin された 2 つの SDK SHA は `git fetch <url> <sha>` で
+  どちらも `type=commit` として取得できる）
+
+したがって dead code ではない。**「TypeScript を全部消す」という読み方で
+これを消すのは、移行ではなく破壊である。** 検証器がファイル数・`.ts` 数・
+バイト総数を pin するので、黙って増えることも減ることもできない。
+
+なお `npm install` は EALLOWSCRIPTS で通らない（npm 11.x が git 依存の
+入れ子 install を拒否する）。これは npm の方針であって依存の不在ではなく、
+上の 3 点目とは別の事実である。結果として vitest スイートは未検証のまま。
+
+### これで消えた欠陥
+
+- (1) は構造的に消えた。`main` が指す bundle は `src/` からコンパイルされる。
+- (2) も構造的に消えた。ページは route 表を引数で受け取って描く。表示と
+  実際に答えるものが同じ 1 つの値から出る。
+
+### 移行で変えなかったもの
+
+- **多段パス `/xrpc/a/b` は移行前と同じく転送する。** 移行前は rest parameter
+  `[...path]` で受け、空文字だけを 400 にしていた。1 セグメントに絞ると
+  失敗の起きる場所と応答が変わる —— それは移行ではなく方針変更である。
+- **受け取ったリクエストヘッダはそのまま上流へ運ぶ。** 移行前は
+  `new Headers(event.request.headers)` から `host` だけを落としていた。
+  `authorization` を落とせば認証つきの XRPC が黙って壊れ、`cookie` を
+  third-party へ運ぶのを止めるのはそれ自体が方針の決定である。**`cookie` の
+  転送は見直す価値があるが、別の決定として起票する。**
+- **`rules`（CompiledWasm）は残した。** kotodama component の module rule で
+  あって SvelteKit の残骸ではない。
+
+### 足したもの
+
+`/health` は移行前に無かった。`kotodama.jsonld` の `triggers.http.routes` が
+宣言しており、deploy された面が答えることを外から確かめる手段が他に無いので
+足した。**移し替えではなく追加である。**
+
+### UI
+
+基盤は jp-go-digital-design-system（skill kotoba-uiux が定める新規 UI の base）。
+`--hig-*` トークン契約のみ、app 固有 CSS は 3 行。CSS は
+`shadow.resource/inline` で bundle に焼く。決定論的 audit で 100.00 / 100
+（既定 10 軸でも `--extra-axes` の 12 軸でも）。
+
+## 検証（この ADR を書いた時点で実際に通したもの）
+
+- `crowdfunding.appview.route-test`: 6 tests / 25 assertions、0 failures
+  （nbb、ビルド不要）
+- ページ描画 → design-quality score 100.00、gate PASS（10 軸・12 軸とも）
+- `scripts/verify-docs-claims.cljs`: 全 claim PASS、exit 0
+- **bundle をビルドし、実際に叩いた。** `shadow-cljs release worker` が
+  55 files / 12 compiled / 0 warnings で通り `dist/worker.js`（246,094 バイト、
+  sha256 `cdf9df94…250c4072`）を出した。`scripts/smoke-worker.cljs` がそれを
+  import して 17 項目を確認。
+- **workerd で実際に起こした**（`wrangler dev --local`）。GET / が 200 の HTML
+  （82,377 バイト、`dads-table` 74 / `--color-primitive-blue` 45）、
+  GET /health が 200 で自分の route を名乗り、POST /xrpc/ が 400、
+  OPTIONS が 204、未知パスが 404、誤 method が 405 を返した。
+  **`compatibility_flags`（nodejs_compat / nodejs_als）の撤去は、この実測の
+  後に行った** —— SvelteKit の adapter-cloudflare 由来で cljs の :esm bundle
+  には要らないが、憶測では消さない。
+
+### 検査が落ちることを確かめた（mutation）
+
+| mutation | 落ちた検査 |
+|---|---|
+| `route/dispatch` → 存在しない var | ビルドが **rc=1**。bundle の sha256 は 1 バイトも動かない |
+| `(rc/inline \"jp_go_dds/dds.css\")` → `\"\"` | smoke の *stylesheet* だけ赤。*component* は緑のまま |
+| ページが env の値を描くようにする | smoke の *hides other var values* が赤 |
+| ページが中継先を描かないようにする | smoke の *shows the relay target* が赤 |
+| view が route 表でなく固定値を描く | unit test 3 assertion + 検証器の `page-renders-route-table` |
+| 撤去したパスに `.ts` が戻る / 別名の `svelte.config.js` が入る / `main` を別の先に向ける / `:warnings-as-errors` を `:build-options` に移す / `kotoba/` にファイルを足す | 検証器の対応する claim だけ |
+
+**`:warnings-as-errors` は `:compiler-options` に置く。** shadow が読むのは
+`[:compiler-options :warnings-as-errors]` で、`:build-options` に置くと
+**黙って無視される** —— この option が防ぐはずの失敗（落ちようのない検査）
+そのものになる。検証器はこれを **EDN として parse して**確かめる。grep では
+できない: 誤配置も、それを説明する `shadow-cljs.edn` のコメント自身も、
+同じ文字列を含むからである。
+
+**2 つの mutation を同時に当てて 1 度失敗した。** 中継先を隠す mutation を
+戻さないまま route 表の mutation を重ね、前者の赤を後者の結果として読みかけた。
+両方を破棄して 1 つずつやり直した。**外した / 汚れた mutation の結果は
+実演と数えない。**
+
+さらに、値漏洩の mutation を当てたとき *shows the relay target* は**緑のまま**
+だった —— 漏れた値の中に中継先 URL が含まれていたためである。2 つを同時に
+当てていたら、この検査は「隠しても緑・漏らしても緑」で一度も落ちないものに
+見えたはずである。
+
+## Consequences
+
+- appview の TypeScript は 0 本、正本言語が 4 本になった。`kotoba/` の 8 本は
+  **意図的にそのまま**で、検証器が pin する。
+- 継承した 4 ファイルは 1 バイトも変わっていない（sha256 を検証器に固定）。
+  `wrangler.jsonc` / `CLAUDE.md` / `MIGRATION-TODO.md` は意図的に変更したので
+  内容で検査する。
+- ホストは相変わらず NXDOMAIN である（`cf0und1n.etzhayyim.com` /
+  `crowdfunding.etzhayyim.com` / `mcp.etzhayyim.com` の 3 つとも）。移行は
+  それを直さない。deploy するか retire するかは別の決定。
+- appview は新しい capability（`kotoba-lang/crowdfunding`）に**繋がっていない**。
+  移行前と同じく MCP router へ中継するだけである。繋ぐのは別の決定。
+"}]
