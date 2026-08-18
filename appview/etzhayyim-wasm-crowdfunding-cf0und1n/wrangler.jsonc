@@ -1,28 +1,30 @@
 {
   "name": "kotodama-cf0und1n",
-  "main": "svelte/.svelte-kit/cloudflare/_worker.js",
+  // Compiled from src/crowdfunding/appview/worker.cljs by shadow-cljs (:target :esm).
+  // Before the cljs migration this pointed at "svelte/.svelte-kit/cloudflare/_worker.js",
+  // a build output whose directory does not exist anywhere in this tree -- see
+  // docs/adr/0001.
+  "main": "../../dist/worker.js",
   "compatibility_date": "2025-03-17",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "nodejs_als"
-  ],
-  "assets": {
-    "directory": "./svelte/.svelte-kit/cloudflare/client",
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "none"
-  },
+  // nodejs_compat / nodejs_als were removed with the SvelteKit adapter that needed
+  // them. Removed only after `wrangler dev --local` served every route without them
+  // (docs/operator-quickstart.md S4.6), not on the assumption that they were unused.
   "vars": {
     "APP_CAPABILITIES": "[\"command-serve\",\"domain-query\",\"campaign-management\",\"backer-relations\",\"payment-escrow\"]",
     "APP_DESCRIPTION": "AI Agent-Driven Crowdfunding Platform — OEM D2C product pre-sales, market validation, funding [AI Agent — unofficial, not affiliated with the real organization]",
     "APP_DISPLAY_NAME": "Crowdfunding",
     "APP_EMBED_URL": "https://cf0und1n.etzhayyim.com/embed",
-    "APP_FRAMEWORK": "sveltekit-edge-bff",
+    "APP_FRAMEWORK": "cljs-esm-worker",
     "APP_NANOID": "cf0und1n",
     "APP_PERFORMER_TYPE": "service",
     "APP_UI_TYPE": "appview",
     "AGENTGATEWAY_MCP_ROUTER_URL": "https://mcp.etzhayyim.com/xrpc/com.etzhayyim.mcp.message"
   },
+  // Inherited, and left alone: this is the kotodama component's module rule
+  // (kotodama.jsonld declares component.path "component.wasm"), not SvelteKit
+  // residue. No .wasm file is in the tree today, so the rule matches nothing --
+  // it is inert, but removing it is a decision about the component, not about
+  // this migration.
   "rules": [
     {
       "type": "CompiledWasm",

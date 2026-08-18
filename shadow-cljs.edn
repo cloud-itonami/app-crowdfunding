@@ -1,0 +1,29 @@
+;; The crowdfunding appview Worker. :esm, mirroring cloud-itonami-marketplace-listing
+;; and cloud-itonami/app-ongakuka.
+;;
+;; wrangler.jsonc's main points at dist/worker.js, which is THIS bundle compiled
+;; from the source in src/. That is the whole point of the migration recorded in
+;; docs/adr/0001: before it, main pointed at svelte/.svelte-kit/cloudflare/_worker.js,
+;; a directory that does not exist in this tree at all.
+;;
+;; :warnings-as-errors is not decoration. shadow treats an undeclared or renamed
+;; var as a WARNING, so `shadow-cljs release worker` exits 0 while writing a
+;; bundle that throws `Cannot read properties of undefined` on the first request.
+;; "The build succeeded" is therefore not a check at all -- it cannot fail.
+;; Demonstrated in THIS repo before landing this line (docs/operator-quickstart.md S4).
+{:deps {:aliases [:cljs]}
+ :builds
+ {:worker
+  {:target :esm
+   :output-dir "dist"
+   :modules {:worker {:exports {default crowdfunding.appview.worker/handler}}}
+   ;; NOTE the key lives under :compiler-options, NOT :build-options -- shadow
+   ;; reads `[:compiler-options :warnings-as-errors]`
+   ;; (shadow/build/compiler.clj `should-warning-throw?`). Putting it under
+   ;; :build-options is silently ignored, which is the same failure this option
+   ;; exists to prevent: a fix that cannot fail. scripts/verify-docs-claims.cljs
+   ;; asserts the placement by PARSING this EDN, not by grepping -- this very
+   ;; comment contains the string a grep would find.
+   :compiler-options {:output-feature-set :es2020
+                      :infer-externs :auto
+                      :warnings-as-errors true}}}}
