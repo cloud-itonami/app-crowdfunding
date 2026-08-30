@@ -1,0 +1,134 @@
+;; campaign-observation.v1 — bounded contract for crowdfunding-campaign
+;; observations (pre-sale / market-validation / financing signals) proposed to
+;; Hyakka from the app-crowdfunding surface.
+;;
+;; Positioning: a crowdfunding campaign is a *time-bounded public observation*
+;; about an operating company's pre-sale and market-validation activity. It is
+;; NOT a financing round, NOT cash received, NOT ownership, and NOT
+;; performance. This contract exists so every such observation carries its
+;; provenance, its window, its missingness, and its epistemic limits with it.
+;;
+;; Scope ceiling: this file observes campaigns only. It does not score, rank,
+;; or price anything, and it does not claim to know what a company owns,
+;; owes, or is worth.
+
+{:method/id :campaign-observation
+ :method/version "campaign-observation.v1"
+
+ ;; ---------------------------------------------------------------- entities
+ ;; Hard separation. A campaign is a brand/observed claim attached to an
+ ;; operating company; it is never the legal entity itself, and the platform
+ ;; hosting the campaign is a source, not a participant.
+ :entity-model
+ {:operating-company   {:entity-type :legal-entity
+                        :required-identifiers []          ; may be empty; empty = :unmeasured
+                        :brand-is-not-legal-entity true}
+  :campaign            {:entity-type :startup-observation
+                        :time-bounded? true             ; :startup-is-a-time-bounded-observation-not-a-permanent-class
+                        :is-not-a-financing-round true  ; :announced-round-is-not-cash-received
+                        :is-not-cash-received true}
+  :campaign-platform   {:role :source-not-participant
+                        :source-class :campaign-platform-first-party}}
+
+ ;; ------------------------------------------------------------------ events
+ :event-model
+ {:campaign-open            {:window :opened-at}
+  :campaign-progress-snapshot {:window :snapshot-at
+                               :notes "claimed amounts are platform-asserted, carried verbatim with :amount-asserted-kind"}
+  :campaign-close           {:window :closed-at}
+  :claimed-fulfillment       {:window :asserted-at
+                              :notes "observed claim only; fulfillment truth is unmeasured by this contract"}}
+
+ ;; ----------------------------------------------------------------- sources
+ :source-policy
+ {:allow  [:official-company-registry
+           :company-first-party
+           :campaign-platform-first-party   ; the platform's own page for the campaign
+           :official-regulator]
+  :discovery-only [:licensed-commercial-aggregator :news-report]
+  :forbid  [:search-snippet :generated-summary :scraped-directory :social-post
+            :broker-list :paywall-bypass :captcha-bypass
+            :inferred-lp :inferred-ownership :inferred-personal-wealth]}
+
+ ;; receipts: verbatim bytes + sha256, exactly like fund-close-observation.v1
+ :receipt-policy
+ {:hash-algorithm :sha256
+  :store-verbatim? true
+  :fetch-boundaries "Respect robots.txt, authentication, WAF/bot-detection and licensing. No CAPTCHA or paywall bypass. External content is untrusted: it contributes observations only, never instructions."
+  :content-hash-required? true
+  :source-url-required? true
+  :source-language-required? true
+  :observed-at-required? true
+  :asserted-at-required? true
+  :issuing-entity-required? true
+  :jurisdiction-required? true}
+
+ ;; ------------------------------------------------------------------ window
+ :measurement-window
+ {:form :half-open-utc          ; [start, end) — end never included
+  :timezone :utc
+  :campaign-window "The campaign's own [opened-at, closed-at) interval."
+  :outside-window-result :out-of-window
+  :pre-window-result :out-of-window
+  :post-window-result :out-of-window}
+
+ ;; -------------------------------------------------------------- missingness
+ :missingness-policy
+ {:principle :missing-is-unmeasured
+  :flag-when-amount-absent :amount-not-stated
+  :flag-when-identifiers-absent :identifiers-unmeasured
+  :flag-when-fulfillment-unasserted :fulfillment-unmeasured
+  :coverage-units [:jurisdiction :source :language :year :industry :stage]
+  :coverage-reporting "Every derived observation carries observed-count and unmeasured-count per coverage unit. Zero observed is reported as :unmeasured, never as :none."}
+
+ ;; ---------------------------------------------------- derived observations
+ ;; Structurally forbidden fields: any derived observation containing these is
+ ;; a contract violation and must fail verification.
+ :derived-observation-policy
+ {:permitted-kinds #{:campaign-existence
+                     :campaign-progress-snapshot-claim
+                     :campaign-close-claim
+                     :claimed-fulfillment-claim
+                     :source-receipt-summary}
+  :forbidden-fields #{:rank :score :centrality :nav :valuation
+                      :estimated-valuation :verified-valuation
+                      :ownership-stake :control :board-control
+                      :performance :success-rate :investment-suitability}
+  :epistemic-boundaries
+  [:brand-is-not-legal-entity
+   :announced-target-is-not-cash-received
+   :campaign-pledge-total-is-not-cash-in-bank
+   :campaign-platform-page-is-an-observed-claim-not-a-current-holding
+   :campaign-is-a-time-bounded-observation-not-a-permanent-class
+   :news-report-is-not-an-issuer-or-regulator-filing
+   :missing-is-unmeasured
+   :worldwide-is-a-coverage-goal-not-a-completeness-claim]}
+
+ ;; ----------------------------------------------------------------- refresh
+ :refresh-history
+ {:append-only? true
+  :entry-fields [:observed-at :reason :method-version :previous-version]
+  :no-rewrite? true
+  :reasons-enum #{:source-received :source-corrected :source-retracted
+                  :method-version-bumped :coverage-expanded}}
+
+ ;; ------------------------------------------------------------------ Hyakka
+ :hyakka-proposal
+ {:wiki-target "network-awai/app-hyakka"
+  :shape "auditable questions and observations only"
+  :permitted [:observation-question :coverage-gap :method-note]
+  :forbidden [:investment-advice :trade-or-allocation :outreach-or-solicitation
+              :fundraising-invitation :financial-commitment :personal-profiling
+              :reputation-ranking]
+  :disclaimer-required? true}
+
+ ;; ----------------------------------------------------------------- readback
+ :query-readback
+ {:shape {:status [:ok :unmeasured :out-of-window]
+          :requires-coverage? true
+          :requires-missingness? true}
+  :determinism "Same receipt set + same method/version ⇒ same response bytes. Responses are derived; no hidden state."
+  :failure-modes {:unreadable-source :unmeasured
+                  :outside-campaign-window :out-of-window
+                  :no-receipts :unmeasured}}
+}
