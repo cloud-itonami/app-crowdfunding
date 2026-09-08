@@ -18,7 +18,7 @@
   (:require ["fs" :as fs]
             ["path" :as path]
             ["crypto" :as crypto]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [cljs.reader :refer [read-string]]))
 
 (def contract-path
