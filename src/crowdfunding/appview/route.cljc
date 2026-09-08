@@ -15,7 +15,7 @@
   `crowdfunding.{campaign,pledge,fee,payout,…}` を **kotoba-lang/crowdfunding**
   が既に所有しているためである（README.edn の :superseded-by）。この repo が
   持つのはその公開面（appview）だけなので、名前もそう言う。"
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def routes
   "公開されている面を、データとして。ランディングページは **これ** を描くので、
@@ -50,7 +50,7 @@
   `:page` / `:health` / `:xrpc` / `:cors-preflight` / `:not-found` /
   `:method-not-allowed` / `:bad-request` のいずれか。"
   [method path]
-  (let [m (keyword (str/lower-case (or method "get")))
+  (let [m (keyword (str/lower (or method "get")))
         p (or path "")]
     (cond
       (and (= m :options) (str/starts-with? p "/xrpc/"))

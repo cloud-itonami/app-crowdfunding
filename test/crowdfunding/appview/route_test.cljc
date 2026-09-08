@@ -1,6 +1,6 @@
 (ns crowdfunding.appview.route-test
   (:require [clojure.test :refer [deftest is testing]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [crowdfunding.appview.route :as route]
             [crowdfunding.appview.view :as view]))
 
