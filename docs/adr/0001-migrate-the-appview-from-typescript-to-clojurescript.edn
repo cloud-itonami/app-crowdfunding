@@ -120,7 +120,7 @@ ns を `crowdfunding.route` ではなく `crowdfunding.appview.route` にした�
   （nbb、ビルド不要）
 - ページ描画 → design-quality score 100.00、gate PASS（10 軸・12 軸とも）
 - `scripts/verify-docs-claims.cljs`: 全 claim PASS、exit 0
-- **bundle をビルドし、実際に叩いた。** `shadow-cljs release worker` が
+- **bundle をビルドし、実際に叩いた。** `amu compile --target wasm32-browser worker` が
   55 files / 12 compiled / 0 warnings で通り `dist/worker.js`（246,094 バイト、
   sha256 `cdf9df94…250c4072`）を出した。`scripts/smoke-worker.cljs` がそれを
   import して 17 項目を確認。
