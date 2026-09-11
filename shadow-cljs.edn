@@ -7,7 +7,7 @@
 ;; a directory that does not exist in this tree at all.
 ;;
 ;; :warnings-as-errors is not decoration. shadow treats an undeclared or renamed
-;; var as a WARNING, so `shadow-cljs release worker` exits 0 while writing a
+;; var as a WARNING, so `amu compile --target wasm32-browser worker` exits 0 while writing a
 ;; bundle that throws `Cannot read properties of undefined` on the first request.
 ;; "The build succeeded" is therefore not a check at all -- it cannot fail.
 ;; Demonstrated in THIS repo before landing this line (docs/operator-quickstart.md S4).

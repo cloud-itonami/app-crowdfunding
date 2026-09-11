@@ -26,7 +26,7 @@ Cloudflare のアカウントは要らない（deploy だけが要る。§7）�
 git clone git@github.com:cloud-itonami/app-crowdfunding.git
 cd app-crowdfunding
 REPO=$PWD
-npx --yes nbb scripts/verify-docs-claims.cljs .
+npx --yes kbb --backend sci scripts/verify-docs-claims.cljk .
 ```
 
 末尾が `OK` なら README の数値・存在・不在は tree と一致している。
@@ -52,7 +52,7 @@ cat > "$d/run.cljs" <<'EOF'
 (require '[cljs.test :refer [run-tests]] 'crowdfunding.appview.route-test)
 (run-tests 'crowdfunding.appview.route-test)
 EOF
-npx --yes nbb --classpath "$CP" "$d/run.cljs"
+npx --yes kbb --backend sci --classpath "$CP" "$d/run.cljs"
 ```
 
 実際の出力:
@@ -89,9 +89,9 @@ cat > "$d/render.cljs" <<'EOF'
   (println "ok"))
 EOF
 DDS="$K/jp-go-digital-design-system" OUT="$d/page.html" \
-  npx --yes nbb --classpath "$CP" "$d/render.cljs"
+  npx --yes kbb --backend sci --classpath "$CP" "$d/render.cljs"
 
-cd $K/design-quality && npx --yes nbb -m design-quality.cli score "$d/page.html" --min 95
+cd $K/design-quality && npx --yes kbb --backend sci -m design-quality.cli score "$d/page.html" --min 95
 ```
 
 実際の出力（末尾）:
@@ -120,7 +120,7 @@ resource governor）。直接叩かず、必ず guard 経由で:
 ```bash
 cd "$REPO"
 node ~/github/com-junkawasaki/scripts/resource-guard.mjs run build -- \
-  npx --yes shadow-cljs release worker
+  npx --yes amu compile --target wasm32-browser worker
 ls -la dist/worker.js
 ```
 
@@ -172,7 +172,7 @@ Use of undeclared Var crowdfunding.appview.route/dispatch-nonexistent
 ここが deploy されるものに触る唯一の検査である。
 
 ```bash
-cd "$REPO" && npx --yes nbb scripts/smoke-worker.cljs dist/worker.js
+cd "$REPO" && npx --yes kbb --backend sci scripts/smoke-worker.cljk dist/worker.js
 ```
 
 ```

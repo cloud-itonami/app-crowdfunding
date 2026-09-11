@@ -36,7 +36,7 @@ bounded retry/refusal → signed Hyakka claim proposal → readback → audit。
 ## 検証
 
 ```bash
-nbb tools/campaign_claim_fixtures.cljs   # exit 0 = 全 fixture pass
+kbb --backend sci tools/campaign_claim_fixtures.cljk   # exit 0 = 全 fixture pass
 ```
 
 offline・決定論的（ネットワークアクセス無し）。exit 1 = 違反検出、
