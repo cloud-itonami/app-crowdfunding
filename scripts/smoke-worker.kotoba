@@ -16,7 +16,7 @@
 (def bundle
   "ESM の import は相対パスを package 名と読むので、必ず絶対パスに直してから
   file:// URL にする（`dist/worker.js` をそのまま渡すと『Cannot find package dist』
-  になる）。`<dir>` 引数は **先頭** に置く規約（superproject CLAUDE.md）。"
+  になる）。`<dir>` 引数は **先頭** に置く規約（superproject AGENTS.md）。"
   (let [a (first (remove #(str/starts-with? % "--") *command-line-args*))]
     (.resolve path (or a "dist/worker.js"))))
 

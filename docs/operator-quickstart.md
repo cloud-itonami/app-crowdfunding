@@ -114,7 +114,7 @@ gate: aggregate 100.00 >= min 95.00 -> PASS
 
 ## 4. bundle をビルドする
 
-**高負荷ビルドは同時 1 本に制限されている**（superproject `CLAUDE.md` の
+**高負荷ビルドは同時 1 本に制限されている**（superproject `AGENTS.md` の
 resource governor）。直接叩かず、必ず guard 経由で:
 
 ```bash
@@ -314,7 +314,7 @@ npx wrangler deploy
 | ホスト | 結果 |
 |---|---|
 | `cf0und1n.etzhayyim.com`（唯一の declared route） | NXDOMAIN |
-| `crowdfunding.etzhayyim.com`（`CLAUDE.md` が名乗る URL） | NXDOMAIN。どの wrangler 設定にも無い |
+| `crowdfunding.etzhayyim.com`（`AGENTS.md` が名乗る URL） | NXDOMAIN。どの wrangler 設定にも無い |
 | `mcp.etzhayyim.com`（中継先） | NXDOMAIN |
 
 deploy が成功しても誰も到達できない。`/xrpc/` の中継先も同様なので、到達できた

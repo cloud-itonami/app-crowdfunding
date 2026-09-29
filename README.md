@@ -131,7 +131,7 @@ design-quality のスコアはこの区別をしない。CLI 自身が
 | ホスト | 役割 | DNS（2026-08-18 実測） |
 |---|---|---|
 | `cf0und1n.etzhayyim.com` | 公開ホスト（wrangler の唯一の route） | **NXDOMAIN** |
-| `crowdfunding.etzhayyim.com` | `CLAUDE.md` が名乗る URL | **NXDOMAIN**、かつどの wrangler 設定にも無い |
+| `crowdfunding.etzhayyim.com` | `AGENTS.md` が名乗る URL | **NXDOMAIN**、かつどの wrangler 設定にも無い |
 | `mcp.etzhayyim.com` | `/xrpc/:nsid` の中継先 | **NXDOMAIN** |
 
 deploy 先も中継先も、いま存在しない（`etzhayyim.com` 自体は解決する）。
@@ -147,7 +147,7 @@ deploy 先も中継先も、いま存在しない（`etzhayyim.com` 自体は解
 - `wrangler.jsonc` は**意図的に変更**した（`main` の付け替え、存在しない
   SvelteKit client を指す `assets` の撤去、`compatibility_flags` の撤去、
   `APP_FRAMEWORK` を `sveltekit-edge-bff` → `cljs-esm-worker`）
-- `CLAUDE.md` と `MIGRATION-TODO.md` も**意図的に変更**した（前者は appview の
+- `AGENTS.md` と `MIGRATION-TODO.md` も**意図的に変更**した（前者は appview の
   runtime を書いていなかったので追記、後者は「appview の去就を決める」という
   open item を移行が答えたので更新）。どちらも byte 一致集合から外し、**内容で
   検査する** —— 意図的な変更と勝手な変更を区別するため
@@ -183,7 +183,7 @@ deploy 先も中継先も、いま存在しない（`etzhayyim.com` 自体は解
 
 ## 残っている欠陥（移行では直っていない）
 
-1. **`CLAUDE.md` が名乗る URL `crowdfunding.etzhayyim.com` を、何も serve して
+1. **`AGENTS.md` が名乗る URL `crowdfunding.etzhayyim.com` を、何も serve して
    いない。** 宣言されている唯一のアドレスは `cf0und1n.etzhayyim.com` である。
    移行はこれを直さない（どちらも NXDOMAIN なので、直す先が無い）。
 2. **`MIGRATION-TODO.md` の substrate-boundary チェックは未実施のまま。** 移行が

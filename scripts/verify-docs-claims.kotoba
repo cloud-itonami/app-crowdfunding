@@ -50,9 +50,9 @@
    :shadow-export "crowdfunding.appview.worker/handler"})
 
 ;; Inherited files this repository still carries BYTE-IDENTICAL.
-;; CLAUDE.md and MIGRATION-TODO.md deliberately left this set: the migration made
+;; AGENTS.md and MIGRATION-TODO.md deliberately left this set: the migration made
 ;; statements in both of them incomplete or false (MIGRATION-TODO asked for the
-;; appview's fate to be decided; CLAUDE.md described the component without saying
+;; appview's fate to be decided; AGENTS.md described the component without saying
 ;; what serves it). Both are checked by CONTENT below instead of by hash, which is
 ;; how an intended change is told apart from an unnoticed one.
 (def preserved
@@ -139,10 +139,10 @@
       (check! :production-canonical-files (:production-canonical-files claims)
               (count (filter #(re-find #"\.(cljs|cljc|clj|kotoba)$" %) prod))))
 
-    ;; CLAUDE.md now says what actually serves this component
-    (let [c (slurp* "CLAUDE.md")]
+    ;; AGENTS.md now says what actually serves this component
+    (let [c (slurp* "AGENTS.md")]
       (if (nil? c)
-        (undet! "CLAUDE.md unreadable")
+        (undet! "AGENTS.md unreadable")
         (check! :claude-md-describes-cljs true
                 (and (str/includes? c "shadow-cljs")
                      (str/includes? c "src/crowdfunding/appview/worker.cljs")
