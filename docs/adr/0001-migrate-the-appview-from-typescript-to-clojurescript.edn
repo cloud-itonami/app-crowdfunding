@@ -38,7 +38,7 @@ cloud-itonami の 4 actor へ移った（ADR-2607268500）。`MIGRATION-TODO.md`
    `svelte/src/routes/xrpc/[...path]/+server.ts` の 60 行 1 本きりで、
    これは SvelteKit のビルドに含まれる本物である。
 
-この workspace の正本言語は cljs と kotoba である（superproject CLAUDE.md の
+この workspace の正本言語は cljs と kotoba である（superproject AGENTS.md の
 runtime 順序: kotoba wasm > clojurewasm > ClojureScript > nbb）。TypeScript は
 そこに無い。
 
@@ -165,7 +165,7 @@ ns を `crowdfunding.route` ではなく `crowdfunding.appview.route` にした�
 - appview の TypeScript は 0 本、正本言語が 4 本になった。`kotoba/` の 8 本は
   **意図的にそのまま**で、検証器が pin する。
 - 継承した 4 ファイルは 1 バイトも変わっていない（sha256 を検証器に固定）。
-  `wrangler.jsonc` / `CLAUDE.md` / `MIGRATION-TODO.md` は意図的に変更したので
+  `wrangler.jsonc` / `AGENTS.md` / `MIGRATION-TODO.md` は意図的に変更したので
   内容で検査する。
 - ホストは相変わらず NXDOMAIN である（`cf0und1n.etzhayyim.com` /
   `crowdfunding.etzhayyim.com` / `mcp.etzhayyim.com` の 3 つとも）。移行は
